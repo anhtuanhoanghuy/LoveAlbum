@@ -1,0 +1,455 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Album Ảnh Kỷ Niệm</title>
+    <link rel="icon" href="icon.ico" type="image/ico">
+    <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/framer-motion@11/dist/framer-motion.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            overflow-x: hidden;
+        }
+
+        #root {
+            min-height: 100vh;
+            background: #09090b;
+            overflow: hidden;
+        }
+
+        .carousel-row {
+            width: 100%;
+        }
+
+        .carousel-track {
+            display: flex;
+            gap: 1.5rem;
+            animation: scroll-left 60s linear infinite;
+            will-change: transform;
+        }
+
+        .direction-right .carousel-track {
+            animation: scroll-right 60s linear infinite;
+        }
+
+        .direction-left .carousel-track {
+            animation: scroll-left 60s linear infinite;
+        }
+
+        .carousel-row:hover .carousel-track {
+            animation-play-state: paused;
+        }
+
+        .carousel-item {
+            min-width: 400px;
+            height: 280px;
+            flex-shrink: 0;
+            border-radius: 0.5rem;
+            overflow: hidden;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+            transition: transform 0.3s ease;
+            cursor: pointer;
+        }
+
+        .carousel-item:hover {
+            transform: scale(1.05);
+            z-index: 10;
+        }
+
+        .carousel-item img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            border-radius: 0.5rem;
+        }
+
+        @keyframes scroll-left {
+            0% {
+                transform: translateX(0);
+            }
+            100% {
+                transform: translateX(calc(-400px * 5 - 1.5rem * 5));
+            }
+        }
+
+        @keyframes scroll-right {
+            0% {
+                transform: translateX(calc(-400px * 5 - 1.5rem * 5));
+            }
+            100% {
+                transform: translateX(0);
+            }
+        }
+
+        @media (max-width: 768px) {
+            .carousel-item {
+                min-width: 280px;
+                height: 200px;
+            }
+
+            @keyframes scroll-left {
+                0% {
+                    transform: translateX(0);
+                }
+                100% {
+                    transform: translateX(calc(-280px * 5 - 1.5rem * 5));
+                }
+            }
+
+            @keyframes scroll-right {
+                0% {
+                    transform: translateX(calc(-280px * 5 - 1.5rem * 5));
+                }
+                100% {
+                    transform: translateX(0);
+                }
+            }
+        }
+
+        .hero-section {
+            position: relative;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 2rem;
+        }
+
+        .hero-content {
+            text-align: center;
+        }
+
+        .heart-icon {
+            width: 5rem;
+            height: 5rem;
+            color: #f43f5e;
+            fill: #f43f5e;
+            margin: 0 auto 1.5rem;
+            animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+        }
+
+        .hero-title {
+            font-size: 4.5rem;
+            color: white;
+            margin-bottom: 1rem;
+            letter-spacing: -0.025em;
+        }
+
+        .hero-subtitle {
+            font-size: 1.25rem;
+            color: #a1a1aa;
+        }
+
+        .scroll-hint {
+            position: absolute;
+            bottom: 3rem;
+            color: #71717a;
+            font-size: 0.875rem;
+            animation: bounce 1s infinite;
+        }
+
+        .footer-section {
+            text-align: center;
+            padding: 4rem 2rem;
+        }
+
+        .footer-heart {
+            width: 3rem;
+            height: 3rem;
+            color: #f43f5e;
+            fill: #f43f5e;
+            margin: 0 auto 1rem;
+        }
+
+        .footer-text {
+            color: #a1a1aa;
+            font-size: 1.125rem;
+        }
+
+        .lightbox-overlay {
+            position: fixed;
+            inset: 0;
+            z-index: 50;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: rgba(0, 0, 0, 0.95);
+            padding: 1rem;
+        }
+
+        .lightbox-close {
+            position: absolute;
+            top: 1.5rem;
+            right: 1.5rem;
+            width: 3.5rem;
+            height: 3.5rem;
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(4px);
+            border-radius: 9999px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            z-index: 10;
+            border: none;
+            transition: background 0.2s;
+        }
+
+        .lightbox-close:hover {
+            background: rgba(255, 255, 255, 0.2);
+        }
+
+        .lightbox-image {
+            max-width: 100%;
+            max-height: 90vh;
+            object-fit: contain;
+            border-radius: 0.5rem;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+        }
+
+        @keyframes pulse {
+            0%, 100% {
+                opacity: 1;
+            }
+            50% {
+                opacity: 0.5;
+            }
+        }
+
+        @keyframes bounce {
+            0%, 100% {
+                transform: translateY(-25%);
+                animation-timing-function: cubic-bezier(0.8, 0, 1, 1);
+            }
+            50% {
+                transform: translateY(0);
+                animation-timing-function: cubic-bezier(0, 0, 0.2, 1);
+            }
+        }
+    </style>
+</head>
+<body>
+    <div id="root"></div>
+
+    <script type="text/babel">
+        const API_URL = "https://script.google.com/macros/s/AKfycbyT9CjfAaWf05Y6g5eYM3D5La0TArh4033df6aLweQp6CzVGF21GsOr5p8sRPr67Wve-A/exec";
+        const { useState } = React;
+        const { motion, AnimatePresence } = Motion;
+
+        const HeartIcon = ({ className }) => (
+            <svg className={className} fill="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path>
+            </svg>
+        );
+
+        const XIcon = ({ className }) => (
+            <svg className={className} width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <line x1="18" y1="6" x2="6" y2="18"></line>
+                <line x1="6" y1="6" x2="18" y2="18"></line>
+            </svg>
+        );
+
+        function loadImages() {
+            return new Promise((resolve, reject) => {
+                const callbackName = "handleData_" + Date.now();
+
+                window[callbackName] = function(data) {
+                resolve(data);
+                delete window[callbackName];
+                script.remove();
+                };
+
+                const script = document.createElement("script");
+                script.src = API_URL + "?callback=" + callbackName;
+
+                script.onerror = reject;
+
+                document.body.appendChild(script);
+            });
+        }
+
+        function App() {
+            
+//LOCAL IMAGES
+        // const TOTAL_IMAGES = 397; // sửa số này theo thực tế
+        // const photos = Array.from({ length: TOTAL_IMAGES }, (_, i) => ({
+        //     id: i + 1,
+        //     url: `Images/img_${i + 1}.jpg`
+        // }));
+
+
+//CLOUD IMAGES
+
+            const [selectedPhoto, setSelectedPhoto] = useState(null);
+            const [photos, setPhotos] = useState([]);
+
+           React.useEffect(() => {
+                logEvent("visit");
+
+                loadImages().then(data => {
+                    console.log("DATA:", data.length); // 👈 THÊM DÒNG NÀY
+                    const mapped = data.map((img, i) => ({
+                        id: i,
+                        url: img.url
+                    }));
+                    setPhotos(mapped);
+                });
+            }, []);
+
+            const ROW_SIZE = 10;
+
+            const photoRows = [];
+            for (let i = 0; i < photos.length; i += ROW_SIZE) {
+                photoRows.push(photos.slice(i, i + ROW_SIZE));
+            }
+            return (
+                <div id="root">
+                    <motion.div
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        transition={{ duration: 1 }}
+                        className="hero-section"
+                    >
+                        <motion.div
+                            initial={{ scale: 0.8, opacity: 0 }}
+                            animate={{ scale: 1, opacity: 1 }}
+                            transition={{ duration: 0.8, delay: 0.3 }}
+                            className="hero-content"
+                        >
+                            <HeartIcon className="heart-icon" />
+                            <h1 className="hero-title">Album Ảnh Kỷ Niệm</h1>
+                            <p className="hero-subtitle">Những khoảnh khắc đáng nhớ của chúng ta</p>
+                        </motion.div>
+
+                        <motion.div
+                            initial={{ opacity: 0 }}
+                            animate={{ opacity: 1 }}
+                            transition={{ delay: 1.5, duration: 1 }}
+                            className="scroll-hint"
+                        >
+                            Cuộn xuống để xem
+                        </motion.div>
+                    </motion.div>
+
+                    <div style={{ marginBottom: '6rem' }}>
+                        {photoRows.map((row, rowIndex) => (
+                            <div key={rowIndex} style={{ overflow: 'hidden', marginBottom: '3rem' }}>
+                                <motion.div
+                                    initial={{ opacity: 0, y: 50 }}
+                                    whileInView={{ opacity: 1, y: 0 }}
+                                    viewport={{ once: true, margin: "-100px" }}
+                                    transition={{ duration: 0.6, delay: rowIndex * 0.1 }}
+                                    style={{ position: 'relative' }}
+                                >
+                                    <div className={`carousel-row ${rowIndex % 2 === 0 ? 'direction-right' : 'direction-left'}`}>
+                                        <div className="carousel-track">
+                                            {[...row, ...row].map((photo, photoIndex) => (
+                                                <motion.div
+                                                    key={`${photo.id}-${photoIndex}`}
+                                                    initial={{ opacity: 0, scale: 0.8 }}
+                                                    whileInView={{ opacity: 1, scale: 1 }}
+                                                    viewport={{ once: true }}
+                                                    transition={{
+                                                        duration: 0.5,
+                                                        delay: (photoIndex % row.length) * 0.1
+                                                    }}
+                                                    className="carousel-item"
+                                                    onClick={() => {
+                                                        setSelectedPhoto(photo.url);
+                                                        logEvent("view_image", photo.url);
+                                                        }}
+                                                >
+                                                    <img 
+                                                        src={photo.url}
+                                                        loading="lazy"
+                                                        alt={`Memory ${photo.id}`}
+                                                        onError={(e) => e.target.style.display = 'none'}
+                                                        />
+                                                </motion.div>
+                                            ))}
+                                        </div>
+                                    </div>
+                                </motion.div>
+                            </div>
+                        ))}
+                    </div>
+
+                    <AnimatePresence>
+                        {selectedPhoto && (
+                            <motion.div
+                                initial={{ opacity: 0 }}
+                                animate={{ opacity: 1 }}
+                                exit={{ opacity: 0 }}
+                                transition={{ duration: 0.3 }}
+                                className="lightbox-overlay"
+                                onClick={() => setSelectedPhoto(null)}
+                            >
+                                <motion.button
+                                    initial={{ opacity: 0, scale: 0.8 }}
+                                    animate={{ opacity: 1, scale: 1 }}
+                                    exit={{ opacity: 0, scale: 0.8 }}
+                                    transition={{ duration: 0.2 }}
+                                    onClick={() => setSelectedPhoto(null)}
+                                    className="lightbox-close"
+                                >
+                                    <XIcon />
+                                </motion.button>
+
+                                <motion.img
+                                    initial={{ scale: 0.9, opacity: 0 }}
+                                    animate={{ scale: 1, opacity: 1 }}
+                                    exit={{ scale: 0.9, opacity: 0 }}
+                                    transition={{ duration: 0.3 }}
+                                    src={selectedPhoto}
+                                    alt="Enlarged view"
+                                    className="lightbox-image"
+                                    onClick={(e) => e.stopPropagation()}
+                                />
+                            </motion.div>
+                        )}
+                    </AnimatePresence>
+
+                    <motion.div
+                        initial={{ opacity: 0 }}
+                        whileInView={{ opacity: 1 }}
+                        viewport={{ once: true }}
+                        className="footer-section"
+                    >
+                        <HeartIcon className="footer-heart" />
+                        <p className="footer-text">Mỗi khoảnh khắc đều là một kỷ niệm đáng trân trọng</p>
+                    </motion.div>
+                </div>
+            );
+        }
+
+        const root = ReactDOM.createRoot(document.getElementById('root'));
+        root.render(<App />);
+
+        function logEvent(event, image = "") {
+            fetch(API_URL, {
+                method: "POST",
+                mode: "no-cors", // 👈 thêm dòng này
+                headers: {
+                "Content-Type": "application/json"
+                },
+                body: JSON.stringify({
+                event,
+                image,
+                userAgent: navigator.userAgent
+                })
+            });
+        }
+    </script>
+</body>
+</html>
